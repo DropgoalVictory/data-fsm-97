@@ -7,7 +7,7 @@ from pathlib import Path
 
 from chameleon import PageTemplateLoader
 
-from fsm97.constants import LEAGUE_GROUPS, country_flag, CLUB_NATIONS, POS_ORDER, SKILL_COLS, SKILL_LABELS, SKILL_GROUPS, FINISH_POSITIONS, TEAM_NAMES
+from fsm97.constants import LEAGUE_GROUPS, country_flag, CLUB_NATIONS, POS_ORDER, POSITIONS, SKILL_COLS, SKILL_LABELS, SKILL_GROUPS, FINISH_POSITIONS, TEAM_NAMES
 from fsm97.data import Dataset
 from fsm97.content import CLUB_TRIVIA, STADIUM_TRIVIA, PLAYER_TRIVIA, PLAYER_DISPLAY_NAMES, VIDEOS
 from fsm97.credits import CREDITS, NO_PLAYER_MATCH
@@ -1457,6 +1457,11 @@ class Scribe:
         zone_of = {info["abbreviation"]: info["zone"] for info in ds.positions_info.values()}
         info = ds.positions_info.get(pos, {})
         zone = info.get("zone", "")
+        zone_positions = ", ".join(
+            abbr for abbr, name, z, order in sorted(
+                (t for t in POSITIONS if t[2] == zone), key=lambda t: t[3]
+            )
+        )
 
         pp_zone = [p for p in ds.players if zone_of.get(p["position"]) == zone]
         pp_zone_sorted = sorted(pp_zone, key=lambda p: self._pos_rating(p, pos), reverse=True)
@@ -1481,6 +1486,7 @@ class Scribe:
             pos=pos,
             pos_slug=pos_slug,
             zone=zone,
+            zone_positions=zone_positions,
             player_count=len(pp_zone_sorted),
             players=players,
             surprising=surprising,

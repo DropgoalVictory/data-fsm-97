@@ -2,6 +2,7 @@
   <div metal:fill-slot="content" tal:omit-tag="1">
 
     <p class="muted">Zone: <strong>${zone}</strong> · ${'{:,}'.format(player_count)} players</p>
+    <p class="muted">The ${zone} zone covers ${zone_positions}. Players from other zones with a strong ${pos} rating are listed separately under <a href="#surprising">Surprising performers</a> at the bottom of the page.</p>
 
     <div class="filter-bar">
       <input data-filter="pos-${pos_slug}" placeholder="Filter players…" autofocus="">
@@ -40,7 +41,7 @@
       </tbody>
     </table>
 
-    <h2>Surprising performers</h2>
+    <h2 id="surprising">Surprising performers</h2>
     <p class="muted">Top 10 players from outside the ${zone} zone, ranked by their ${pos} rating.</p>
 
     <table>

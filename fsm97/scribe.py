@@ -7,7 +7,7 @@ from pathlib import Path
 
 from chameleon import PageTemplateLoader
 
-from fsm97.constants import LEAGUE_GROUPS, country_flag, CLUB_NATIONS, POS_ORDER, POSITIONS, SKILL_COLS, SKILL_LABELS, SKILL_GROUPS, FINISH_POSITIONS, TEAM_NAMES
+from fsm97.constants import LEAGUE_GROUPS, country_flag, CLUB_NATIONS, POS_ORDER, SKILL_COLS, SKILL_LABELS, SKILL_GROUPS, FINISH_POSITIONS, TEAM_NAMES
 from fsm97.data import Dataset
 from fsm97.content import CLUB_TRIVIA, STADIUM_TRIVIA, PLAYER_TRIVIA, PLAYER_DISPLAY_NAMES, VIDEOS
 from fsm97.credits import CREDITS, NO_PLAYER_MATCH
@@ -1454,22 +1454,11 @@ class Scribe:
 
     def _write_position_page(self, pos):
         ds = self.ds
-        zone_of = {info["abbreviation"]: info["zone"] for info in ds.positions_info.values()}
         info = ds.positions_info.get(pos, {})
         zone = info.get("zone", "")
-        zone_positions = ", ".join(
-            abbr for abbr, name, z, order in sorted(
-                (t for t in POSITIONS if t[2] == zone), key=lambda t: t[3]
-            )
-        )
 
-        pp_zone = [p for p in ds.players if zone_of.get(p["position"]) == zone]
-        pp_zone_sorted = sorted(pp_zone, key=lambda p: self._pos_rating(p, pos), reverse=True)
-        players = [self._player_row(p, pos) for p in pp_zone_sorted]
-
-        outside = [p for p in ds.players if zone_of.get(p["position"]) != zone]
-        top_outside = sorted(outside, key=lambda p: self._pos_rating(p, pos), reverse=True)[:10]
-        surprising = [self._player_row(p, pos) for p in top_outside]
+        top_players = sorted(ds.players, key=lambda p: self._pos_rating(p, pos), reverse=True)[:100]
+        players = [self._player_row(p, pos) for p in top_players]
 
         pos_slug = slug(pos)
         breadcrumb = f'<a href="/">Home</a> › <a href="/positions/">Positions</a> › {pos}'
@@ -1479,17 +1468,15 @@ class Scribe:
             active="Positions",
             page_title=f"{pos} — {info.get('position', '')}",
             header_title=info.get("position", pos),
-            header_sub=f"{pos} · {zone} · {len(pp_zone_sorted):,} players",
+            header_sub=f"{pos} · {zone} · Top {len(players):,} by rating",
             breadcrumb=breadcrumb,
             meta_description=f"{info.get('position', pos)} ({pos}) — position ratings and top players from FIFA Soccer Manager 97.",
             canonical_url=self._canonical(f"/positions/{pos_slug}/"),
             pos=pos,
             pos_slug=pos_slug,
             zone=zone,
-            zone_positions=zone_positions,
-            player_count=len(pp_zone_sorted),
+            player_count=len(players),
             players=players,
-            surprising=surprising,
         )
         self.write_file(f"positions/{pos_slug}/index.html", content)
 
